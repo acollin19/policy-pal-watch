@@ -20,6 +20,7 @@ interface Product {
 
 interface BusinessData {
   companyName: string;
+  businessLocation: string;
   products: Product[];
 }
 
@@ -60,7 +61,9 @@ const Dashboard = () => {
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-3">
                   <h1 className="text-4xl font-bold text-foreground">{businessData.companyName}</h1>
-                  <Badge variant="outline" className="text-sm">Calgary, AB</Badge>
+                  <Badge variant="outline" className="text-sm">
+                    {businessData.businessLocation.charAt(0).toUpperCase() + businessData.businessLocation.slice(1)}
+                  </Badge>
                 </div>
                 <Button variant="outline" onClick={() => navigate("/setup")}>
                   Edit Profile

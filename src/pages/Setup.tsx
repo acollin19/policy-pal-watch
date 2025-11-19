@@ -19,6 +19,7 @@ interface Product {
 
 interface BusinessData {
   companyName: string;
+  businessLocation: string;
   products: Product[];
 }
 
@@ -27,6 +28,7 @@ const Setup = () => {
   const { toast } = useToast();
   
   const [companyName, setCompanyName] = useState("");
+  const [businessLocation, setBusinessLocation] = useState("canada");
   const [products, setProducts] = useState<Product[]>([
     {
       id: "1",
@@ -89,6 +91,7 @@ const Setup = () => {
     // Save to localStorage
     const businessData: BusinessData = {
       companyName,
+      businessLocation,
       products: validProducts,
     };
     localStorage.setItem("businessData", JSON.stringify(businessData));
@@ -141,10 +144,10 @@ const Setup = () => {
             <CardHeader>
               <CardTitle>Company Information</CardTitle>
               <CardDescription>
-                Start by telling us your business name
+                Start by telling us your business name and location
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="companyName">Company Name</Label>
                 <Input
@@ -154,6 +157,30 @@ const Setup = () => {
                   onChange={(e) => setCompanyName(e.target.value)}
                   required
                 />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="businessLocation">Business Location</Label>
+                <Select
+                  value={businessLocation}
+                  onValueChange={setBusinessLocation}
+                >
+                  <SelectTrigger id="businessLocation">
+                    <SelectValue placeholder="Select country" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="canada">Canada</SelectItem>
+                    <SelectItem value="usa">United States</SelectItem>
+                    <SelectItem value="mexico">Mexico</SelectItem>
+                    <SelectItem value="uk">United Kingdom</SelectItem>
+                    <SelectItem value="germany">Germany</SelectItem>
+                    <SelectItem value="france">France</SelectItem>
+                    <SelectItem value="italy">Italy</SelectItem>
+                    <SelectItem value="spain">Spain</SelectItem>
+                    <SelectItem value="australia">Australia</SelectItem>
+                    <SelectItem value="japan">Japan</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </CardContent>
           </Card>
