@@ -1,24 +1,114 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { AlertCircle, TrendingUp, DollarSign, Shield } from "lucide-react";
 import TariffCalculator from "@/components/TariffCalculator";
 import ScenarioAnalysis from "@/components/ScenarioAnalysis";
 import MitigationStrategies from "@/components/MitigationStrategies";
 import PolicyAlerts from "@/components/PolicyAlerts";
 
+interface Product {
+  id: string;
+  name: string;
+  hsCode: string;
+  countryOfOrigin: string;
+  costPerUnit: string;
+  unitsPerMonth: string;
+}
+
+interface BusinessData {
+  companyName: string;
+  products: Product[];
+}
+
 const Dashboard = () => {
+  const navigate = useNavigate();
+  const [businessData, setBusinessData] = useState<BusinessData | null>(null);
+
+  useEffect(() => {
+    const storedData = localStorage.getItem("businessData");
+    if (storedData) {
+      setBusinessData(JSON.parse(storedData));
+    }
+  }, []);
+
+  // Calculate total monthly impact from all products
+  const calculateMonthlyImpact = () => {
+    if (!businessData) return 0;
+    
+    // Simple calculation: assume 15% average tariff increase impact
+    let total = 0;
+    businessData.products.forEach(product => {
+      const cost = parseFloat(product.costPerUnit) || 0;
+      const units = parseFloat(product.unitsPerMonth) || 0;
+      const impact = cost * units * 0.15; // 15% tariff increase
+      total += impact;
+    });
+    return Math.round(total);
+  };
+
+  const monthlyImpact = calculateMonthlyImpact();
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-card">
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-4xl font-bold text-foreground">Prairie Grounds Coffee</h1>
-            <Badge variant="outline" className="text-sm">Calgary, AB</Badge>
+        {businessData ? (
+          <>
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <h1 className="text-4xl font-bold text-foreground">{businessData.companyName}</h1>
+                  <Badge variant="outline" className="text-sm">Calgary, AB</Badge>
+                </div>
+                <Button variant="outline" onClick={() => navigate("/setup")}>
+                  Edit Profile
+                </Button>
+              </div>
+              <p className="text-muted-foreground">
+                {businessData.products.length === 1 
+                  ? `Importing ${businessData.products[0].name}`
+                  : `Importing ${businessData.products.map(p => p.name).join(", ")}`}
+              </p>
+
+              {/* Product Details */}
+              <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                {businessData.products.map((product) => (
+                  <Card key={product.id} className="shadow-[var(--shadow-card)]">
+                    <CardContent className="pt-6">
+                      <h3 className="font-semibold text-foreground mb-2">{product.name}</h3>
+                      <div className="space-y-1 text-sm text-muted-foreground">
+                        {product.hsCode && <p>HS Code: {product.hsCode}</p>}
+                        {product.countryOfOrigin && (
+                          <p>Origin: {product.countryOfOrigin.charAt(0).toUpperCase() + product.countryOfOrigin.slice(1)}</p>
+                        )}
+                        <p>Cost: ${parseFloat(product.costPerUnit).toFixed(2)}/unit</p>
+                        <p>Volume: {product.unitsPerMonth} units/month</p>
+                        <p className="font-semibold text-foreground pt-2">
+                          Monthly: ${(parseFloat(product.costPerUnit) * parseFloat(product.unitsPerMonth)).toFixed(2)}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-4xl font-bold text-foreground">Prairie Grounds Coffee</h1>
+              <Badge variant="outline" className="text-sm">Calgary, AB</Badge>
+            </div>
+            <p className="text-muted-foreground mb-4">
+              Importing coffee beans, ceramic mugs, and espresso machine parts
+            </p>
+            <Button onClick={() => navigate("/setup")}>
+              Set Up Your Business Profile
+            </Button>
           </div>
-          <p className="text-muted-foreground">
-            Importing coffee beans, ceramic mugs, and espresso machine parts
-          </p>
-        </div>
+        )}
 
         {/* Stats Overview */}
         <div className="grid md:grid-cols-4 gap-4 mb-8">
@@ -39,8 +129,8 @@ const Dashboard = () => {
           <StatCard
             icon={<DollarSign className="w-5 h-5" />}
             label="Monthly Impact"
-            value="$420"
-            trend="From mug tariff increase"
+            value={`$${monthlyImpact}`}
+            trend={businessData ? "From tariff increases" : "From mug tariff increase"}
             variant="warning"
           />
           <StatCard
